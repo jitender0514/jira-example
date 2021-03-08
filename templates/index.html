@@ -1,0 +1,188 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Form</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css">
+    <script type="text/javascript" charset="utf8" src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-2.0.3.js"></script>
+    <script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <style rel="stylesheet" type="text/css">
+        body {
+            padding: 20px 10px;
+            color: royalblue;
+        }
+
+        .text-left {
+            text-align: left !important;
+        }
+
+        input, select, button {
+            border-color: royalblue !important;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h3> Configure ticketing tool...</h3>
+    {% if msg %}
+    <p class="bg-success">{{msg}}</p>
+    {% endif %}
+    <p class="bg-danger">{{ form.non_field_errors }}</p>
+    <form action="{% url 'projects:project' %}" method="post" class="form-horizontal">
+        {% csrf_token %}
+
+        <div class="fieldWrapper form-group">
+            {{ form.service.errors }}
+            <label class="col-sm-5 control-label text-left" for="{{ form.subject.id_for_label }}">Select Tool:</label>
+            <div class="col-sm-7">{{ form.service }}</div>
+        </div>
+        <div class="fieldWrapper form-group">
+            {{ form.end_point.errors }}
+            <label class="col-sm-5 control-label text-left" for="{{ form.end_point.id_for_label }}">End Point:</label>
+            <div class="col-sm-7">{{ form.end_point }}</div>
+        </div>
+
+        <div class="fieldWrapper form-group">
+            {{ form.authentication_type.errors }}
+            <label class="col-sm-5 control-label text-left" for="{{ form.authentication_type.id_for_label }}">Authentication
+                Type:</label>
+            <div class="col-sm-7">
+                {% for choice in form.authentication_type %}
+                  {{ choice }} &nbsp;&nbsp;
+                {% endfor %}
+            </div>
+        </div>
+        <div class="basicOpt fieldWrapper form-group">
+            {{ form.username.errors }}
+            <label class="col-sm-5 control-label text-left" for="{{ form.username.id_for_label }}">Username:</label>
+            <div class="col-sm-7">{{ form.username }}</div>
+        </div>
+        <div class="basicOpt fieldWrapper form-group">
+            {{ form.password.errors }}
+            <label class="col-sm-5 control-label text-left" for="{{ form.password.id_for_label }}">Password:</label>
+            <div class="col-sm-7">{{ form.password }}</div>
+        </div>
+        <div class="tokenOpt fieldWrapper form-group">
+            {{ form.token.errors }}
+            <label class="col-sm-5 control-label text-left" for="{{ form.token.id_for_label }}">Token:</label>
+            <div class="col-sm-7">{{ form.token }}</div>
+        </div>
+        {% if fetch %}
+            <h3> Configure Jira</h3>
+            <div>
+                <div class="row text-center" id="projectSelection">
+
+                    <div class="col-xs-5">
+                        <h4>Choose Project</h4>
+                        <select class="form-control" id="features" name="AllProjects[]ßß" multiple="multiple"
+                                style="height:200px;">
+                            {% for obj in data %}
+                                <option value="{{ obj.id }}">{{ obj.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-xs-2" style="padding:39px; text-align:center">
+                        <div style="padding-top:10px;">
+                            <button type="button" value="" class="btn btn-primary" id="add">></button>
+                        </div>
+                        <div style="padding-top:10px;">
+                            <button type="button" value="" class="btn btn-primary" id="addAll">>></button>
+                        </div>
+                        <div style="padding-top:20px;">
+                            <button type="button" value="" class="btn btn-danger" id="remove"><</button>
+                        </div>
+
+                        <div style="padding-top:10px;">
+                            <button type="button" value="" class="btn btn-danger" id="removeAll"><<</button>
+                        </div>
+                    </div>
+                    <div class="col-xs-5">
+                        <h4>Selected Project</h4>
+                        <select class="form-control" name="SelectedProjects[]" size="9" id="selected_features"
+                                multiple="multiple"
+                                style="height:200px;">
+                        </select>
+                    </div>
+                    <div id="hiddenFields" class='hidden'>
+
+                    </div>
+                </div>
+                <br/>
+                <div class="text-center">
+                    <input  type="submit" class="btn btn-primary" value="Save" name="save">
+                    <input style="color:royalblue" type="reset" class="btn btn-default" value="Cancel" name="cancel">
+                </div>
+
+                {% else %}
+                <div class="text-center">
+                    <input type="submit" style="color:royalblue" class="btn btn-default"  value="Fetch Projects">
+                </div>
+            </div>
+        {% endif %}
+    </form>
+</div>
+<script type="text/javascript">
+    const PROJECTS = {{ data|safe|escape  }}
+    $(document).ready(function () {
+        $('#add').click(function () {
+            $('#features option:selected').each(function () {
+                const id = $(this).val();
+                const obj = PROJECTS.find(function (proj) { return  proj.id == id});
+                $("<input class='selected"+obj.id+"' name='selected_projects' value='"+obj.id+"'>").appendTo('#hiddenFields');
+
+            });
+            return !$('#features option:selected')
+                .remove().appendTo('#selected_features');
+        });
+        $('#remove').click(function () {
+            $('#selected_features option:selected').each(function () {
+                const id = $(this).val();
+                $(".selected"+obj.id).remove();
+            });
+            return !$('#selected_features option:selected')
+                .remove().appendTo('#features');
+        });
+
+        $('#addAll').click(function () {
+            $( "#hiddenFields" ).empty();
+            $.each(PROJECTS, function (key, obj) {
+                $("<input class='selected"+obj.id+"' name='selected_projects' value='"+obj.id+"'>").appendTo('#hiddenFields');
+            });
+            return !$('#features option')
+                .remove().appendTo('#selected_features');
+        });
+        $('#removeAll').click(function () {
+            $( "#hiddenFields" ).empty();
+            return !$('#selected_features option')
+                .remove().appendTo('#features');
+        });
+
+        function checkAuthType(auth_type) {
+            if (auth_type == "token") {
+                $(".basicOpt").hide();
+                $(".basicOpt input").val('');
+                $(".tokenOpt").show();
+            } else {
+                $(".tokenOpt").hide().children("input").val('');
+                $(".tokenOpt input").val('');
+                $(".basicOpt").show();
+            }
+        }
+
+        $('input[name=authentication_type]').click(function () {
+            const auth_type = $(this).val();
+            checkAuthType(auth_type);
+        });
+
+        function selectall() {
+            $('#selected_features').find('option').each(function () {
+                $(this).attr('selected', 'selected');
+            });
+        }
+        checkAuthType($('input[name=authentication_type]:checked').val());
+    });
+</script>
+</body>
+</html>
