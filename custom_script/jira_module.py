@@ -2,7 +2,7 @@ from jira import JIRA
 
 KEY="wc9037hn06PP2ecVqQaSF345"
 class JiraModule:
-
+    print("sasa")
     USER = None
     USER_KEY = None
     JIRA_OBJ = None
